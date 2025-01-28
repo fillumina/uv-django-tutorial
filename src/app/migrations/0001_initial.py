@@ -7,22 +7,18 @@ from django.db import migrations
 logger = logging.getLogger(__name__)
 
 def generate_superuser(apps, schema_editor):
-    from django.contrib.auth import get_user_model
 
     USERNAME = os.environ.get("ADMIN_USERNAME")
     PASSWORD = os.environ.get("ADMIN_PASSWORD")
     EMAIL = os.environ.get("ADMIN_EMAIL")
 
-    user = get_user_model()
+    User = apps.get_model('auth', 'User')
 
-    if not user.objects.filter(username=USERNAME, email=EMAIL).exists():
-        logger.info("Creating new superuser")
-        admin = user.objects.create_superuser(
-           username=USERNAME, password=PASSWORD, email=EMAIL
-        )
-        admin.save()
-    else:
-        logger.info("Superuser already created!")
+    logger.info("Creating new superuser")
+    admin = User.objects.create_superuser(
+        username=USERNAME, password=PASSWORD, email=EMAIL
+    )
+    admin.save()
 
 
 class Migration(migrations.Migration):
