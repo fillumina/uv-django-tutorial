@@ -1,0 +1,64 @@
+version: '3.7'
+
+# ${env_var} env_var must be defined in the environment or in .env file
+
+x-app-env: &app-env
+  DATABASE_URL: postgresql://postgres:${pgpass}@postgresdb:5432/locallibrary
+  DJANGO_SETTINGS_MODULE: uvdjangotutorial.settings
+  MANAGE_PY_PATH: manage.py
+  ADMIN_USERNAME: admin
+  ADMIN_PASSWORD: admin
+  ADMIN_EMAIL: admin@localhost
+
+services:
+  postgresdb:
+    image: postgres:15-alpine
+    restart: always
+    networks:
+      - sysnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${pgpass}
+      POSTGRES_DB: locallibrary
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      #- ./pg_conf/postgresql.conf:/etc/postgresql/postgresql.conf
+      #- ./pg_conf/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      #- ./pg_conf/init.sql:/docker-entrypoint-initdb.d/init.sql
+  web:
+    networks:
+      - sysnet
+    ports:
+      - 8000:8000
+    healthcheck:
+      test: curl --fail http://localhost:8000/admin
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+    build: ./src
+    restart: always
+    depends_on:
+      postgresdb:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+    labels:
+      # Enable Traefik for this service
+      - "traefik.enable=true"
+      # Define the rule for accessing the app
+      - "traefik.http.routers.famaapp.rule=Host(`${proxy_domain}`)"
+      # Define the service port for Traefik to use
+      - "traefik.http.services.famaapp.loadbalancer.server.port=8000"
+      # Use the default certificate resolver for SSL
+      - "traefik.http.routers.famaapp.tls.certresolver=defresolver"
+
+networks:
+  sysnet:
+    external: false
