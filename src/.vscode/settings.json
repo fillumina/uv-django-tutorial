@@ -1,0 +1,12 @@
+{
+    "python.djangoTestRunner.rootPackageName": "uvdjangotutorial",
+    "python.testing.unittestArgs": [
+        "-v",
+        "2",
+        "-p",
+        "test_*.py",
+        "./tests"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
+}
