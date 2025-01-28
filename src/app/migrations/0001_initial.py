@@ -8,9 +8,9 @@ logger = logging.getLogger(__name__)
 
 def generate_superuser(apps, schema_editor):
 
-    USERNAME = os.environ.get("ADMIN_USERNAME")
-    PASSWORD = os.environ.get("ADMIN_PASSWORD")
-    EMAIL = os.environ.get("ADMIN_EMAIL")
+    USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+    PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin")
+    EMAIL = os.environ.get("ADMIN_EMAIL", "admin@localhost")
 
     User = apps.get_model('auth', 'User')
 
